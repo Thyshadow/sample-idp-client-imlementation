@@ -1,0 +1,15 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">User Claims</h1>
+    <ul>
+        @foreach (var claim in this.HttpContext.User.Claims)
+        {
+            <li>@Html.Raw($"{claim.Type} - {claim.Value}")</li>
+        }
+    </ul>
+</div>
