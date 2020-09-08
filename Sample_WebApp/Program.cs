@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Logging;
 
 namespace Sample_WebApp
 {
@@ -13,6 +14,8 @@ namespace Sample_WebApp
     {
         public static void Main(string[] args)
         {
+            IdentityModelEventSource.ShowPII = true;
+
             CreateHostBuilder(args).Build().Run();
         }
 

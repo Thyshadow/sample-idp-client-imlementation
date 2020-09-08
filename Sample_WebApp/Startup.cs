@@ -4,6 +4,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OAuth.Claims;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -40,10 +41,34 @@ namespace Sample_WebApp
                 options.DefaultScheme = $"AuthCookie{ShowCode}";
                 options.DefaultChallengeScheme = "oidc";
             })
-                .AddCookie($"AuthCookie{ShowCode}")
+                .AddJwtBearer()
+                .AddCookie($"AuthCookie{ShowCode}", options =>
+                {
+                    options.ExpireTimeSpan = TimeSpan.FromHours(1);
+                    options.Events = new CookieAuthenticationEvents()
+                    {
+                        OnValidatePrincipal = context =>
+                        {
+
+                            if (context.Properties.Items.ContainsKey(".Token.expires_at"))
+                            {
+                                var expire = DateTime.Parse(context.Properties.Items[".Token.expires_at"]);
+                                if (expire > DateTime.Now) //TODO:change to check expires in next 5 mintues.
+                                {
+                                    //logger.Warn($"Access token has expired, user: {context.HttpContext.User.Identity.Name}");
+
+                                    //TODO: send refresh token to ASOS. Update tokens in context.Properties.Items
+                                    //context.Properties.Items["Token.access_token"] = newToken;
+                                    context.ShouldRenew = true;
+                                }
+                            }
+                            return Task.FromResult(0);
+                        }
+                    };
+                })
                 .AddOpenIdConnect("oidc", options =>
                 {
-                    options.Authority = "https://identity.sandbox.mge360.com/";// "https://localhost:44312/";
+                    options.Authority = "https://localhost:5001/"; //"https://identity.sandbox.mge360.com/";
                     options.ClientId = "Sample_WebApp";
                     options.ClientSecret = "secret";
                     options.ResponseType = "code";
@@ -61,6 +86,11 @@ namespace Sample_WebApp
                             //context.ProtocolMessage.
                             return Task.FromResult(0);
                         },
+                        OnTokenResponseReceived = context =>
+                        {
+                            var response = context.TokenEndpointResponse;
+                            return Task.FromResult(0);
+                        }
                     };
 
                     options.ClaimActions.MapJsonKey("EventID", "EventID");
