@@ -68,9 +68,8 @@ namespace Sample_WebApp
                 })
                 .AddOpenIdConnect("oidc", options =>
                 {
-                    //options.Authority = "https://localhost:5001/";
-                    options.Authority= "https://identity.sandbox.mge360.com/";
-                    options.ClientId = "Sample_WebApp";
+                    options.Authority= "https://idp.events.mge360.com/";
+                    options.ClientId = "82d1d916-4494-445f-b349-5994110db560";
                     options.ClientSecret = "secret";
                     options.ResponseType = "code";
                     options.Scope.Add("openid");
